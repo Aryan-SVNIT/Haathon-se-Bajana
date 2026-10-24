@@ -1,0 +1,61 @@
+# Python environments and cache
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Downloaded model and temporary download
+assets/models/*.task
+assets/models/*.part
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache / compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Test and coverage artifacts
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Local environment variables and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Logs and runtime files
+*.log
+*.pid
+
+# Downloaded MediaPipe model (re-downloads automatically on first run)
+assets/models/*.task
+assets/models/*.part
+
+# Build / packaging output
+build/
+dist/
+*.egg-info/
+
+# IDE settings
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini

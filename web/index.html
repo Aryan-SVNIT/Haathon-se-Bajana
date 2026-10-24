@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Air Instruments · Multiplayer</title><link rel="stylesheet" href="/static/style.css">
+  <script type="module" src="/static/client.js?v=6"></script>
+</head>
+<body>
+  <main class="shell">
+    <header><div class="eyebrow">AIR INSTRUMENTS / MULTIPLAYER</div><h1>Play together.<br><span>Move in the air.</span></h1><p class="intro">Two webcams · live video · real-time hand tracking</p></header>
+    <section class="join-card" id="join-card">
+      <label for="room">Room code</label><div class="join-row"><input id="room" maxlength="32" value="AIR2026" autocomplete="off"><button id="join">Join room</button></div>
+      <p>Both players enter the same room code. One room supports two players.</p>
+    </section>
+    <div class="status" id="status" role="status">Ready to connect</div>
+    <section class="videos">
+      <article class="video-card"><div class="card-head"><span class="dot"></span><span>You</span><span class="pill" id="local-state">Not connected</span></div><div class="video-stage"><video id="local-video" autoplay playsinline muted></video><canvas id="local-overlay" class="landmark-overlay" aria-hidden="true"></canvas></div><div class="gesture"><span>Your hand</span><strong id="local-gesture">Waiting for camera</strong></div></article>
+      <article class="video-card"><div class="card-head"><span class="dot remote"></span><span>Opponent</span><span class="pill" id="remote-state">Waiting</span></div><video id="remote-video" autoplay playsinline></video><div class="gesture"><span>Opponent's hand</span><strong id="remote-gesture">Waiting for player</strong></div></article>
+    </section>
+    <section class="instrument-panel" aria-labelledby="instrument-title">
+      <div class="instrument-top">
+        <div><h2 id="instrument-title">Play instruments with your hands</h2><p class="instrument-copy">Straighten a finger to arm its note, then bend it to play. Both players hear the same gesture-triggered notes.</p></div>
+        <div class="instrument-picker"><label for="instrument">Your instrument</label><select id="instrument"><option value="piano">Piano · 10 notes / two hands</option><option value="guitar">Guitar · 5 notes / one hand</option></select></div>
+      </div>
+      <div class="instrument-status"><span class="sound-dot"></span><span id="sound-status">Sound will be enabled when you join the room.</span><span class="instrument-hint" id="instrument-hint">Piano: use one hand on each side of the frame.</span></div>
+      <div id="note-keys" class="note-keys" aria-live="polite"></div>
+    </section>
+    <section class="tips"><h2>How to play</h2><div class="tip-grid"><p><b>1.</b> Click Join room, then allow camera access when asked.</p><p><b>2.</b> Show your palm clearly in the frame.</p><p><b>3.</b> Straighten a finger once, then bend it to play its note.</p><p><b>4.</b> Use the same room code on both laptops.</p></div><p class="note">Video uses peer-to-peer WebRTC where possible. Hand states travel through the room server; each browser synthesizes the same notes locally, so no microphone audio is transmitted.</p></section>
+  </main>
+</body></html>
