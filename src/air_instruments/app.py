@@ -5,6 +5,7 @@ import pygame
 from .audio import create_note_sounds, initialize_audio
 from .gestures import ThumbStateTracker, count_raised_fingers
 from .instruments.guitar import Guitar
+from .instruments.octapad import Octapad
 from .instruments.piano import Piano
 from .menu import choose_instrument
 from .rendering import draw_hand_landmarks
@@ -87,33 +88,74 @@ def _run_selected_instrument(instrument) -> None:
                     # a note every video frame while a finger remains bent.
                     old_state = previous_raised[slot]
                     if old_state is not None:
-                        for finger_index, is_up in enumerate(raised):
-                            if old_state[finger_index] and not is_up:
-                                note_sounds[slot][finger_index].play()
+                        if instrument.key == "guitar":
+                            thumb_is_up = bool(raised[0])
+                            # In guitar mode, thumb is the Major/Minor mode switch.
+                            # The 4 playable fingers are Index (1), Middle (2), Ring (3), Pinky (4).
+                            sound_group = "guitar_major" if thumb_is_up else "guitar_minor"
+                            for finger_index in range(1, 5):
+                                note_index = finger_index - 1
+                                if old_state[finger_index] and not raised[finger_index]:
+                                    note_sounds[sound_group][note_index].play()
+                        elif instrument.key == "octapad":
+                            is_single_hand = len(hands_to_process) == 1
+                            thumb_is_up = bool(raised[0])
+                            # In 1-hand mode: thumb UP = Bank A (left), thumb DOWN = Bank B (right)
+                            target_slot = ("left" if thumb_is_up else "right") if is_single_hand else slot
+                            for finger_index in range(1, 5):
+                                if old_state[finger_index] and not raised[finger_index]:
+                                    note_sounds[target_slot][finger_index].play()
+                            # In 2-hand mode: thumb 0 triggers Cowbell (left) or Ride (right)
+                            if not is_single_hand and old_state[0] and not raised[0]:
+                                note_sounds[slot][0].play()
+                        else:
+                            for finger_index, is_up in enumerate(raised):
+                                if old_state[finger_index] and not is_up:
+                                    note_sounds[slot][finger_index].play()
                     previous_raised[slot] = raised.copy()
 
-                    if slot == "left":
+                    if instrument.key == "octapad":
+                        is_single = len(hands_to_process) == 1
+                        if is_single:
+                            bank_str = "BANK A (Kick/Snare/HH)" if raised[0] else "BANK B (Toms/Crash/Clap)"
+                            hand_label = f"OCTAPAD [{bank_str}]: {sum(raised[1:])}/4 pads | {thumb_trackers[slot].debug_label}"
+                        else:
+                            bank_str = "BANK A (Rhythm)" if slot == "left" else "BANK B (Fills)"
+                            hand_label = f"OCTAPAD [{bank_str}]: {sum(raised)}/5 pads | {thumb_trackers[slot].debug_label}"
+                    elif slot == "left":
                         hand_label = f"LOW / LEFT: {sum(raised)}/5 | {thumb_trackers[slot].debug_label}"
                     elif slot == "right":
                         hand_label = f"HIGH / RIGHT: {sum(raised)}/5 | {thumb_trackers[slot].debug_label}"
                     else:
-                        hand_label = f"GUITAR: {sum(raised)}/5 | {thumb_trackers[slot].debug_label}"
+                        mode_str = "MAJOR" if raised[0] else "MINOR"
+                        hand_label = f"GUITAR [{mode_str}]: {sum(raised[1:])}/4 strings | {thumb_trackers[slot].debug_label}"
                     draw_hand_landmarks(frame, points, raised, tracker.connections, hand_label)
 
-                # If a hand disappears, reset its edge-detection state. When it returns,
-                # it must first be seen and then make a new press gesture to play a note.
+                # If a hand disappears, reset its edge-detection state.
                 for slot in instrument.hand_slots:
                     if slot not in seen_slots:
                         previous_raised[slot] = None
                         thumb_trackers[slot] = ThumbStateTracker()
 
-                cv2.putText(frame, instrument.status_text(len(result.hand_landmarks)),
+                if instrument.key == "guitar":
+                    thumb_up = True if raised_by_slot.get("guitar") is None else bool(raised_by_slot["guitar"][0])
+                    status_text = instrument.status_text(len(result.hand_landmarks), thumb_up)
+                    instrument.draw(frame, raised_by_slot)
+                elif instrument.key == "octapad":
+                    active_raised = raised_by_slot.get("left") or raised_by_slot.get("right")
+                    thumb_up = True if active_raised is None else bool(active_raised[0])
+                    status_text = instrument.status_text(len(result.hand_landmarks), thumb_up)
+                    instrument.draw(frame, raised_by_slot, single_hand_thumb_up=thumb_up)
+                else:
+                    status_text = instrument.status_text(len(result.hand_landmarks))
+                    instrument.draw(frame, raised_by_slot)
+
+                cv2.putText(frame, status_text,
                             (15, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.68,
                             (255, 255, 255), 2, cv2.LINE_AA)
                 cv2.putText(frame, instrument.instruction_text(),
                             (15, 58), cv2.FONT_HERSHEY_SIMPLEX, 0.47,
                             (255, 255, 255), 1, cv2.LINE_AA)
-                instrument.draw(frame, raised_by_slot)
                 cv2.putText(frame, "Bend finger = play | Straighten = ready again | Q = quit",
                             (15, height - 12), cv2.FONT_HERSHEY_SIMPLEX, 0.48,
                             (255, 255, 255), 1, cv2.LINE_AA)
@@ -133,7 +175,13 @@ def main() -> None:
         if selected is None:
             print("No instrument selected. Exiting.")
             return
-        instrument = Piano() if selected == "piano" else Guitar()
+        if selected == "piano":
+            instrument = Piano()
+        elif selected == "guitar":
+            instrument = Guitar()
+        else:
+            instrument = Octapad()
         _run_selected_instrument(instrument)
     finally:
         pygame.quit()
+

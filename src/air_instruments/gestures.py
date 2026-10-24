@@ -56,6 +56,7 @@ class ThumbStateTracker:
         self.votes: deque[bool] = deque(maxlen=THUMB_STABLE_FRAMES)
         self.last_ip_angle = 0.0
         self.last_spread_ratio = 0.0
+        self.last_extension_ratio = 0.0
         self.last_candidate_up = False
 
     def update(self, points: Sequence[Point]) -> bool:
@@ -70,27 +71,36 @@ class ThumbStateTracker:
         # Normalize thumb-tip-to-index-MCP distance by palm width.
         palm_width = max(distance(points[5], points[17]), 1.0)
         spread_ratio = distance(points[4], points[5]) / palm_width
+
+        # Thumb segment extension ratio: distance(tip, MCP) / (segment1 + segment2).
+        # When straight this is ~0.95-1.0; when bent it drops below 0.80.
+        seg1 = distance(points[3], points[2])
+        seg2 = distance(points[4], points[3])
+        total_len = max(seg1 + seg2, 1.0)
+        extension_ratio = distance(points[4], points[2]) / total_len
+
         self.last_ip_angle = ip_angle
         self.last_spread_ratio = spread_ratio
+        self.last_extension_ratio = extension_ratio
 
         if self.is_up:
-            # While UP, tolerate mild bending; release only at stronger fold.
+            # While UP, tolerate minor adjustments; release when clearly bent or tucked.
             candidate_up = (
-                ip_angle >= THUMB_DOWN_ANGLE_DEG
+                (ip_angle >= THUMB_DOWN_ANGLE_DEG or extension_ratio >= 0.82)
                 and spread_ratio >= THUMB_DOWN_SPREAD_RATIO
             )
         else:
-            # To enter UP, the thumb must be straight and spread from the palm.
+            # To enter UP, thumb must be straight and extended from the palm.
             candidate_up = (
-                ip_angle >= THUMB_UP_ANGLE_DEG
+                (ip_angle >= THUMB_UP_ANGLE_DEG or extension_ratio >= 0.90)
                 and spread_ratio >= THUMB_UP_SPREAD_RATIO
             )
 
         self.last_candidate_up = candidate_up
         self.votes.append(candidate_up)
 
-        # Match the reference implementation: do not decide on the first frame.
-        if len(self.votes) >= 3:
+        # Decide after 2 frames for fast, natural response time.
+        if len(self.votes) >= 2:
             up_votes = sum(self.votes)
             if not self.is_up and up_votes >= THUMB_UP_VOTES_REQUIRED:
                 self.is_up = True
@@ -106,8 +116,8 @@ class ThumbStateTracker:
         candidate = "UP" if self.last_candidate_up else "DOWN"
         up_votes = sum(self.votes)
         return (
-            f"T:{state} IP:{self.last_ip_angle:.0f} "
-            f"SP:{self.last_spread_ratio:.2f} C:{candidate} "
+            f"T:{state} IP:{self.last_ip_angle:.0f}° "
+            f"SP:{self.last_spread_ratio:.2f} EXT:{self.last_extension_ratio:.2f} "
             f"V:{up_votes}/{len(self.votes)}"
         )
 

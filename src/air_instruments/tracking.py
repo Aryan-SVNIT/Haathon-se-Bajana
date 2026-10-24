@@ -51,7 +51,7 @@ class HandTrackingEngine:
 
 
 def open_camera():
-    """Open the default Windows webcam, with a portable fallback."""
+    """Open the default Windows webcam with zero-latency buffer and smooth resolution."""
     camera = cv2.VideoCapture(CAMERA_INDEX, cv2.CAP_DSHOW)
     if not camera.isOpened():
         camera.release()
@@ -62,4 +62,10 @@ def open_camera():
             "Could not open the webcam. Close apps using the camera (Teams/Zoom/browser) "
             "and check Windows Settings > Privacy & security > Camera."
         )
+
+    # Set 1-frame buffer to eliminate camera lag/backlog, and use 640x480 for smooth 30+ FPS tracking.
+    camera.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+    camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    camera.set(cv2.CAP_PROP_FPS, 30)
     return camera

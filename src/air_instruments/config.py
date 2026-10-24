@@ -20,38 +20,94 @@ FINGER_TIP_IDS = (8, 12, 16, 20)
 FINGER_PIP_IDS = (6, 10, 14, 18)
 
 # Thumb detection tuning, based on image-space landmarks.
-# To enter UP, the thumb IP joint must be straighter and tip spread wider.
-# Once UP, more forgiving thresholds keep small bends from causing flicker.
-THUMB_UP_ANGLE_DEG = 125.0
-THUMB_UP_SPREAD_RATIO = 0.30
-THUMB_DOWN_ANGLE_DEG = 105.0
-THUMB_DOWN_SPREAD_RATIO = 0.20
-THUMB_STABLE_FRAMES = 5
-THUMB_UP_VOTES_REQUIRED = 3
+# Calibrated for natural hand poses, fast response time, and jitter resistance.
+THUMB_UP_ANGLE_DEG = 118.0
+THUMB_UP_SPREAD_RATIO = 0.22
+THUMB_DOWN_ANGLE_DEG = 102.0
+THUMB_DOWN_SPREAD_RATIO = 0.15
+THUMB_STABLE_FRAMES = 3
+THUMB_UP_VOTES_REQUIRED = 2
 THUMB_RELEASE_MAX_UP_VOTES = 1
 
-# For piano, the hand on the LEFT side of the mirrored webcam image plays low notes;
-# the hand on the RIGHT side plays higher notes. Five gestures per hand = 10 notes.
+# Ten requested chord progressions:
+# Left hand (5 chords): C Major, G Major, A Minor, F Major, D Major
+# Right hand (5 chords): E Minor, A Major, B Minor, E Major, F# Minor
 PIANO_LEFT_NOTES = (
-    ("C3", 130.81),
-    ("D3", 146.83),
-    ("E3", 164.81),
-    ("F3", 174.61),
-    ("G3", 196.00),
+    ("C Major", 130.81, 164.81, 196.00),   # C - E - G
+    ("G Major", 196.00, 246.94, 293.66),   # G - B - D
+    ("A Minor", 220.00, 261.63, 329.63),   # A - C - E
+    ("F Major", 174.61, 220.00, 261.63),   # F - A - C
+    ("D Major", 146.83, 185.00, 220.00),   # D - F# - A
 )
 PIANO_RIGHT_NOTES = (
-    ("C4", 261.63),
-    ("D4", 293.66),
-    ("E4", 329.63),
-    ("F4", 349.23),
-    ("G4", 392.00),
+    ("E Minor", 164.81, 196.00, 246.94),   # E - G - B
+    ("A Major", 220.00, 277.18, 329.63),   # A - C# - E
+    ("B Minor", 246.94, 293.66, 369.99),   # B - D - F#
+    ("E Major", 164.81, 207.65, 246.94),   # E - G# - B
+    ("F# Minor", 185.00, 220.00, 277.18),  # F# - A - C#
 )
 
-# The first guitar prototype maps the five fingers to five plucked-string-like notes.
-GUITAR_NOTES = (
-    ("E3", 164.81),
-    ("A3", 220.00),
-    ("D4", 293.66),
-    ("G4", 392.00),
-    ("B4", 493.88),
+# Guitar mappings: The thumb acts as a Major / Minor mode switch.
+# Thumb UP = Major; Thumb DOWN = Minor.
+# The 4 playable fingers (Index, Middle, Ring, Pinky) map to 4 guitar chords from this list.
+GUITAR_PLAYING_FINGERS = ("Index", "Middle", "Ring", "Pinky")
+
+GUITAR_MAJOR_NOTES = (
+    ("C Major", 130.81, 164.81, 196.00),  # Index: C Major
+    ("G Major", 196.00, 246.94, 293.66),  # Middle: G Major
+    ("D Major", 146.83, 185.00, 220.00),  # Ring: D Major
+    ("A Major", 220.00, 277.18, 329.63),  # Pinky: A Major
 )
+
+GUITAR_MINOR_NOTES = (
+    ("A Minor", 220.00, 261.63, 329.63),  # Index: A Minor (relative minor of C Major)
+    ("E Minor", 164.81, 196.00, 246.94),  # Middle: E Minor (relative minor of G Major)
+    ("B Minor", 246.94, 293.66, 369.99),  # Ring: B Minor (relative minor of D Major)
+    ("F# Minor", 185.00, 220.00, 277.18), # Pinky: F# Minor (relative minor of A Major)
+)
+
+# Retain for backward compatibility
+GUITAR_NOTES = GUITAR_MAJOR_NOTES
+
+# Octapad Electronic Percussion Pad mappings:
+# 8 iconic electronic percussion drum pads (plus Thumb extras: Cowbell / Ride):
+# Left Hand (Bank A / Rhythm):
+#   Thumb (0): Cowbell
+#   Index (1): Kick (Bass Drum)
+#   Middle (2): Snare Drum
+#   Ring (3): Hi-Hat Closed
+#   Pinky (4): Hi-Hat Open
+# Right Hand (Bank B / Accents & Fills):
+#   Thumb (0): Ride Cymbal
+#   Index (1): Low Tom
+#   Middle (2): High Tom
+#   Ring (3): Crash Cymbal
+#   Pinky (4): Hand Clap
+OCTAPAD_LEFT_PADS = (
+    ("Cowbell", "cowbell", 820.0),
+    ("Kick", "kick", 55.0),
+    ("Snare", "snare", 190.0),
+    ("Hi-Hat Closed", "hihat_closed", 8000.0),
+    ("Hi-Hat Open", "hihat_open", 7500.0),
+)
+
+OCTAPAD_RIGHT_PADS = (
+    ("Ride Cymbal", "ride", 4200.0),
+    ("Low Tom", "low_tom", 95.0),
+    ("High Tom", "high_tom", 165.0),
+    ("Crash Cymbal", "crash", 5000.0),
+    ("Hand Clap", "clap", 1200.0),
+)
+
+# 8 Core Octapad pads in standard 1..8 display order
+OCTAPAD_CORE_PADS = (
+    ("Pad 1: Kick", "kick", 55.0),
+    ("Pad 2: Snare", "snare", 190.0),
+    ("Pad 3: Hi-Hat Closed", "hihat_closed", 8000.0),
+    ("Pad 4: Hi-Hat Open", "hihat_open", 7500.0),
+    ("Pad 5: Low Tom", "low_tom", 95.0),
+    ("Pad 6: High Tom", "high_tom", 165.0),
+    ("Pad 7: Crash Cymbal", "crash", 5000.0),
+    ("Pad 8: Hand Clap", "clap", 1200.0),
+)
+

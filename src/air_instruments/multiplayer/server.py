@@ -75,7 +75,8 @@ def process_tracking_frame(peer_id, frame_data, instrument="piano"):
         }
         PEER_TRACKERS[peer_id] = state
 
-    instrument = "guitar" if instrument == "guitar" else "piano"
+    if instrument not in ("guitar", "octapad"):
+        instrument = "piano"
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     result = state['engine'].detect(rgb)
     detections = list(result.hand_landmarks or [])

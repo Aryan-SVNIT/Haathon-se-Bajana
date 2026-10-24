@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Air Instruments · Multiplayer</title><link rel="stylesheet" href="/static/style.css">
-  <script type="module" src="/static/client.js?v=6"></script>
+  <script type="module" src="/static/client.js?v=11"></script>
 </head>
 <body>
   <main class="shell">
@@ -20,7 +20,7 @@
     <section class="instrument-panel" aria-labelledby="instrument-title">
       <div class="instrument-top">
         <div><h2 id="instrument-title">Play instruments with your hands</h2><p class="instrument-copy">Straighten a finger to arm its note, then bend it to play. Both players hear the same gesture-triggered notes.</p></div>
-        <div class="instrument-picker"><label for="instrument">Your instrument</label><select id="instrument"><option value="piano">Piano · 10 notes / two hands</option><option value="guitar">Guitar · 5 notes / one hand</option></select></div>
+        <div class="instrument-picker"><label for="instrument">Your instrument</label><select id="instrument"><option value="piano">Piano · 10 chords / two hands</option><option value="guitar">Guitar · Major/Minor chords</option><option value="octapad">Octapad · 8 Electronic Drum Pads</option></select></div>
       </div>
       <div class="instrument-status"><span class="sound-dot"></span><span id="sound-status">Sound will be enabled when you join the room.</span><span class="instrument-hint" id="instrument-hint">Piano: use one hand on each side of the frame.</span></div>
       <div id="note-keys" class="note-keys" aria-live="polite"></div>
